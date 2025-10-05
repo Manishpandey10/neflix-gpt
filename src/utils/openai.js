@@ -6,4 +6,5 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
+
 export default openai;

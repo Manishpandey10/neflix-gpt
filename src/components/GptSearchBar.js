@@ -29,8 +29,11 @@ const GptSearchBar = () => {
     // Make an API call to GPT API and get Movie Results
 
     const openai = new OpenAI({
-      apiKey: process.env.REACT_APP_OPENAI_KEY, 
+      apiKey: process.env.REACT_APP_OPENAI_KEY.trim(),   
+      dangerouslyAllowBrowser: true,
+
     });
+    
     const gptQuery =
       "Act as a Movie Recommendation system and suggest some movies for the query : " +
       searchText.current.value +
