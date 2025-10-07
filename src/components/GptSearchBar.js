@@ -1,17 +1,17 @@
-import openai from "../utils/openai";
-import {OpenAI} from "openai";
 import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import lang from "../utils/languageConstants";
 import { API_OPTIONS } from "../utils/constants";
 import { addGptMovieResult } from "../utils/gptSlice";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const GptSearchBar = () => {
   const dispatch = useDispatch();
   const langKey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
+  console.log("Gemini key:", process.env.REACT_APP_GEMINI_KEY);
 
-  // search movie in TMDB
+  // ✅ TMDB Search Function (unchanged)
   const searchMovieTMDB = async (movie) => {
     const data = await fetch(
       "https://api.themoviedb.org/3/search/movie?query=" +
@@ -20,53 +20,48 @@ const GptSearchBar = () => {
       API_OPTIONS
     );
     const json = await data.json();
-
     return json.results;
   };
 
+  // ✅ Gemini Search Handler
   const handleGptSearchClick = async () => {
-    console.log(searchText.current.value);
-    // Make an API call to GPT API and get Movie Results
+    const query = searchText.current.value.trim();
+    if (!query) return;
 
-    const openai = new OpenAI({
-      apiKey: process.env.REACT_APP_OPENAI_KEY.trim(),   
-      dangerouslyAllowBrowser: true,
+    console.log("Searching for:", query);
 
-    });
-    
+    // ✅ Initialize Gemini Client
+    const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_KEY);
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
     const gptQuery =
-      "Act as a Movie Recommendation system and suggest some movies for the query : " +
-      searchText.current.value +
-      ". only give me names of 5 movies, comma seperated like the example result given ahead. Example Result: Gadar, Sholay, Don, Golmaal, Koi Mil Gaya";
+      "Act as a Movie Recommendation system and suggest some movies for the query: " +
+      query +
+      ". Only give me names of 5 movies, comma separated like this example: Gadar, Sholay, Don, Golmaal, Koi Mil Gaya";
+    console.log("Gemini key:", process.env.REACT_APP_GEMINI_KEY);
+    try {
+      // ✅ Ask Gemini
+      const result = await model.generateContent(gptQuery);
+      const response = await result.response;
+      const text = response.text();
 
-    const gptResults = await openai.chat.completions.create({
-      messages: [{ role: "user", content: gptQuery }],
-      model: "gpt-3.5-turbo",
-    });
+      console.log("Gemini result:", text);
 
-    if (!gptResults.choices) {
-      // TODO: Write Error Handling
+      // 🧠 Parse comma-separated list into array
+      const gptMovies = text.split(",").map((m) => m.trim());
+
+      // 🔍 Search TMDB for each movie
+      const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
+      const tmdbResults = await Promise.all(promiseArray);
+
+      dispatch(
+        addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults })
+      );
+    } catch (err) {
+      console.error("Gemini API Error:", err);
+      // alert("Gemini API Error: " + err.message);
     }
-
-    console.log(gptResults.choices?.[0]?.message?.content);
-
-    // Andaz Apna Apna, Hera Pheri, Chupke Chupke, Jaane Bhi Do Yaaro, Padosan
-    const gptMovies = gptResults.choices?.[0]?.message?.content.split(",");
-
-    // ["Andaz Apna Apna", "Hera Pheri", "Chupke Chupke", "Jaane Bhi Do Yaaro", "Padosan"]
-
-    // For each movie I will search TMDB API
-
-    const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
-    // [Promise, Promise, Promise, Promise, Promise]
-
-    const tmdbResults = await Promise.all(promiseArray);
-
-    console.log(tmdbResults);
-
-    dispatch(
-      addGptMovieResult({ movieNames: gptMovies, movieResults: tmdbResults })
-    );
   };
 
   return (
@@ -78,7 +73,7 @@ const GptSearchBar = () => {
         <input
           ref={searchText}
           type="text"
-          className=" p-4 m-4 col-span-9"
+          className="p-4 m-4 col-span-9"
           placeholder={lang[langKey].gptSearchPlaceholder}
         />
         <button
@@ -91,4 +86,5 @@ const GptSearchBar = () => {
     </div>
   );
 };
+
 export default GptSearchBar;
