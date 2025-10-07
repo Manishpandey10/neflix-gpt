@@ -1,3 +1,7 @@
+#Its live here
+- Live link : https://netflix-gpt-872e4.web.app
+(Hosted using firebase by google)
+
 # Netflix GPT
 
 - Create React App
