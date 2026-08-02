@@ -5,14 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { LOGO, SUPPORTED_LANGUAGES } from "../utils/constants";
 import { auth } from "../utils/firebase";
 import { addUser, removeUser } from "../utils/userSlice";
-import { toggleGptSearchView } from "../utils/gptSlice";
+import { toggleSettingsView } from "../utils/gptSlice";
 import { changeLanguage } from "../utils/configSlice";
 
 const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((store) => store.user);
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const showSettings = useSelector((store) => store.gpt.showSettings);
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {})
@@ -44,9 +44,9 @@ const Header = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleGptSearchClick = () => {
-    // Toggle GPT Search
-    dispatch(toggleGptSearchView());
+  const handleSettingsClick = () => {
+    // Toggle Settings
+    dispatch(toggleSettingsView());
   };
 
   const handleLanguageChange = (e) => {
@@ -54,13 +54,13 @@ const Header = () => {
   };
 
   return (
-    <div className="absolute w-screen px-8 py-2 bg-gradient-to-b from-black z-10 flex flex-col md:flex-row justify-between">
-      <img className="w-44 mx-auto md:mx-0" src={LOGO} alt="logo" />
+    <div className="absolute w-screen px-8 py-4 bg-black/90 backdrop-blur-sm z-50 flex flex-col md:flex-row justify-between transition-colors duration-300 border-b border-white border-opacity-10">
+      <img className="w-44 mx-auto md:mx-0 drop-shadow-md" src={LOGO} alt="logo" />
       {user && (
-        <div className="flex p-2 justify-between">
-          {showGptSearch && (
+        <div className="flex p-2 justify-between items-center">
+          {showSettings && (
             <select
-              className="p-2 m-2 bg-gray-900 text-white"
+              className="p-2 m-2 bg-gray-900 text-white rounded-lg shadow-sm border border-gray-700 outline-none"
               onChange={handleLanguageChange}
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
@@ -71,17 +71,17 @@ const Header = () => {
             </select>
           )}
           <button
-            className="py-2 px-4 mx-4 my-2 bg-purple-800 text-white rounded-lg"
-            onClick={handleGptSearchClick}
+            className="py-2 px-6 mx-4 my-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg shadow-md transition-colors"
+            onClick={handleSettingsClick}
           >
-            {showGptSearch ? "Homepage" : "GPT Search"}
+            {showSettings ? "Homepage" : "Settings"}
           </button>
           <img
-            className="hidden md:block w-12 h-12"
+            className="hidden md:block w-12 h-12 rounded-full border-2 border-gray-700 shadow-md"
             alt="usericon"
             src={user?.photoURL}
           />
-          <button onClick={handleSignOut} className="font-bold text-white ">
+          <button onClick={handleSignOut} className="ml-4 font-bold text-red-500 hover:text-red-400 transition-colors">
             (Sign Out)
           </button>
         </div>

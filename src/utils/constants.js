@@ -23,4 +23,53 @@ export const SUPPORTED_LANGUAGES = [
   { identifier: "spanish", name: "Spanish" },
 ];
 
-export const GEMINI_KEY = process.env.REACT_APP_GEMINI_KEY;
+export const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+
+export const GPT_SEARCH_ENDPOINT = `${BACKEND_URL}/api/gpt-search`;
+
+export const TMDB_ENDPOINTS = {
+  nowPlaying: `${BACKEND_URL}/api/tmdb/movie/now_playing`,
+  popular: `${BACKEND_URL}/api/tmdb/movie/popular`,
+  topRated: `${BACKEND_URL}/api/tmdb/movie/top_rated`,
+  upcoming: `${BACKEND_URL}/api/tmdb/movie/upcoming`,
+  videos: (movieId) => `${BACKEND_URL}/api/tmdb/movie/${movieId}/videos`,
+  search: (query) =>
+    `${BACKEND_URL}/api/tmdb/search?query=${encodeURIComponent(query)}`,
+};
+
+/**
+ * Preference vocabularies. These identifiers are sent to the backend and are
+ * validated there against the same allow-lists, so the two must stay in sync.
+ */
+export const GENRES = [
+  "Action",
+  "Adventure",
+  "Animation",
+  "Comedy",
+  "Crime",
+  "Documentary",
+  "Drama",
+  "Fantasy",
+  "Horror",
+  "Mystery",
+  "Romance",
+  "Sci-Fi",
+  "Thriller",
+  "War",
+];
+
+export const MOODS = [
+  "Feel-good",
+  "Dark & gritty",
+  "Edge-of-seat",
+  "Thought-provoking",
+  "Light & funny",
+  "Romantic",
+  "Epic",
+  "Mind-bending",
+];
+
+export const ERAS = ["2020s", "2010s", "2000s", "90s", "80s", "Classic"];
+
+export const MAX_PREFERENCES_PER_GROUP = 4;
